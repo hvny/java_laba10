@@ -14,25 +14,19 @@ import java.util.Scanner;
 
 public class Main {
 
-    private static final String URL = "jdbc:postgresql://localhost:5432/java_bd10";
+    private static final String URL = "jdbc:postgresql://localhost:5432/task";
     private static final String USER = "postgres";
     private static final String PASSWORD = "8631";
+    private static Session session;
 
     public static void main(String[] args) {
+        session = HibernateUtil.getSessionFactory().openSession();
 
-        // Конфигурируем Hibernate
-        Configuration configuration = new Configuration();
-        configuration.configure("hibernate.cfg.xml");
-        SessionFactory sessionFactory = configuration.buildSessionFactory();
-
-        // Устанавливаем соединение через JDBC
         try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD);
              Scanner scanner = new Scanner(System.in)) {
 
-            System.out.println("Введите SQL-скрипт для выполнения:");
-
             while (true) {
-                System.out.print("> ");
+                System.out.print("Введите скрипт: ");
                 String sql = scanner.nextLine();
 
                 // Выполнение SQL-скрипта
@@ -40,7 +34,7 @@ public class Main {
                     boolean hasResultSet = statement.execute(sql);
 
                     if (hasResultSet) {
-                        // Если запрос возвращает результат (например, SELECT)
+
                         ResultSet resultSet = statement.getResultSet();
                         int columnCount = resultSet.getMetaData().getColumnCount();
 
@@ -51,20 +45,13 @@ public class Main {
                             }
                             System.out.println();
                         }
-                    } else {
-                        // Если это не SELECT, выводим количество обновлённых строк
-                        int updateCount = statement.getUpdateCount();
-                        System.out.println("Обновлено строк: " + updateCount);
                     }
                 } catch (SQLException e) {
                     System.err.println("Ошибка при выполнении запроса: " + e.getMessage());
                 }
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            sessionFactory.close();
         }
     }
 }
